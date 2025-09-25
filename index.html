@@ -3,24 +3,22 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Folha de Etiquetas A4</title>
+    <title>Folha de Etiquetas A4 — Gerador</title>
     <style>
       @page {
-        size: A4 landscape; /* força paisagem */
+        size: A4 landscape;
         margin: 10mm;
       }
-
       @media print {
         .controls {
           display: none;
         }
         body,
         html {
-          width: 297mm; /* largura em paisagem */
-          height: 210mm; /* altura em paisagem */
+          width: 297mm;
+          height: 210mm;
         }
       }
-
       html,
       body {
         margin: 0;
@@ -28,7 +26,6 @@
         font-family: Inter, system-ui, -apple-system, Roboto, "Helvetica Neue",
           Arial, sans-serif;
       }
-
       .sheet {
         width: 297mm;
         height: 210mm;
@@ -39,7 +36,6 @@
         page-break-after: always;
         box-sizing: border-box;
       }
-
       .labels {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -48,7 +44,6 @@
         width: 100%;
         height: 100%;
       }
-
       .label {
         width: 300px;
         height: 150px;
@@ -65,144 +60,110 @@
         print-color-adjust: exact;
         border-radius: 4px;
       }
-
       .code {
         display: inline-flex;
         align-items: center;
         font-size: 75px;
       }
-
       .controls {
         position: fixed;
-        right: 12px;
+        left: 12px;
         top: 12px;
         z-index: 50;
         background: #fff;
         padding: 12px;
         border: 1px solid #ccc;
         border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
       }
-
-      .controls form {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-bottom: 8px;
-      }
-
       .controls label {
-        display: flex;
-        flex-direction: column;
-        font-size: 12px;
+        display: block;
+        margin-top: 8px;
+        font-size: 14px;
+        font-weight: 600;
       }
-
       .controls input {
-        padding: 4px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        width: 60px;
+        padding: 6px;
+        width: 100px;
+        margin-right: 6px;
+        margin-top: 2px;
       }
-
       .controls button {
-        padding: 6px 12px;
+        padding: 8px 12px;
+        margin-top: 10px;
+        margin-right: 6px;
         border-radius: 6px;
         border: 1px solid #ccc;
-        background: #f5f5f5;
+        background: #f8f8f8;
         cursor: pointer;
+      }
+      .controls button:hover {
+        background: #eee;
       }
     </style>
   </head>
   <body>
     <div class="controls">
-      <form id="configForm" onsubmit="generateLabels(); return false;">
-        <label>
-          Número inicial (p1):
-          <input type="text" id="numInicial" value="7" size="2" />
-        </label>
-        <label>
-          Letra inicial:
-          <input type="text" id="letraInicial" value="A" size="1" />
-        </label>
-        <label>
-          Letra final:
-          <input type="text" id="letraFinal" value="E" size="1" />
-        </label>
-        <label>
-          Número inicial (p3):
-          <input type="number" id="numDe" value="1" min="1" max="99" />
-        </label>
-        <label>
-          Número final (p3):
-          <input type="number" id="numAte" value="10" min="1" max="99" />
-        </label>
-        <button type="submit">Gerar Etiquetas</button>
-      </form>
-      <button onclick="window.print()">Imprimir (A4)</button>
-      <button onclick="downloadHTML()">Baixar HTML</button>
+      <label>Prefixo numérico</label>
+      <input type="text" id="first" value="7" />
+      <label>Letras (de → até)</label>
+      <input type="text" id="letterStart" value="A" maxlength="1" />
+      <input type="text" id="letterEnd" value="E" maxlength="1" />
+      <label>Números (de → até)</label>
+      <input type="number" id="numStart" value="1" />
+      <input type="number" id="numEnd" value="10" />
+      <label>Cor do fundo</label>
+      <input type="color" id="bgColor" value="#d73708" />
+      <label>Cor do texto</label>
+      <input type="color" id="textColor" value="#ffffff" />
+      <div>
+        <button onclick="generate()">Gerar</button>
+        <button onclick="window.print()">Imprimir (A4)</button>
+        <button onclick="downloadHTML()">Baixar HTML</button>
+      </div>
     </div>
-
     <main id="pages"></main>
-
     <script>
-      function generateLabels() {
-        const first = document.getElementById("numInicial").value.trim();
-        const letraIni = document
-          .getElementById("letraInicial")
-          .value.trim()
-          .toUpperCase();
-        const letraFim = document
-          .getElementById("letraFinal")
-          .value.trim()
-          .toUpperCase();
-        const numIni = parseInt(document.getElementById("numDe").value, 10);
-        const numFim = parseInt(document.getElementById("numAte").value, 10);
-
-        const pagesEl = document.getElementById("pages");
-        pagesEl.innerHTML = ""; // limpa antes de gerar
-
-        // gera as letras no intervalo
-        const letters = [];
-        for (let c = letraIni.charCodeAt(0); c <= letraFim.charCodeAt(0); c++) {
-          letters.push(String.fromCharCode(c));
+      function rangeLetters(start, end) {
+        const result = [];
+        let s = start.toUpperCase().charCodeAt(0);
+        let e = end.toUpperCase().charCodeAt(0);
+        for (let i = s; i <= e; i++) {
+          result.push(String.fromCharCode(i));
         }
-
-        // gera números no intervalo
-        const nums = [];
-        for (let n = numIni; n <= numFim; n++) {
-          nums.push(String(n).padStart(2, "0"));
-        }
-
-        // combinações
+        return result;
+      }
+      function generate() {
+        const first = document.getElementById("first").value || "";
+        const lStart = document.getElementById("letterStart").value || "A";
+        const lEnd = document.getElementById("letterEnd").value || lStart;
+        const nStart = parseInt(document.getElementById("numStart").value, 10);
+        const nEnd = parseInt(document.getElementById("numEnd").value, 10);
+        const bgColor = document.getElementById("bgColor").value;
+        const textColor = document.getElementById("textColor").value;
+        const letters = rangeLetters(lStart, lEnd);
+        const nums = Array.from({ length: nEnd - nStart + 1 }, (_, i) =>
+          String(nStart + i).padStart(2, "0")
+        );
         const all = [];
         for (const L of letters) {
           for (const N of nums) {
             all.push({ p1: first, p2: L, p3: N });
           }
         }
-
         const perPage = 20;
         const pages = Math.ceil(all.length / perPage);
-
-        function createLabel({ p1, p2, p3 }) {
-          const label = document.createElement("div");
-          label.className = "label";
-          const code = document.createElement("div");
-          code.className = "code";
-          code.textContent = `${p1}-${p2}-${p3}`;
-          label.appendChild(code);
-          return label;
-        }
-
+        const pagesEl = document.getElementById("pages");
+        pagesEl.innerHTML = "";
         for (let p = 0; p < pages; p++) {
           const sheet = document.createElement("section");
           sheet.className = "sheet";
           const container = document.createElement("div");
           container.className = "labels";
-
           const chunk = all.slice(p * perPage, (p + 1) * perPage);
           for (let i = 0; i < perPage; i++) {
             if (chunk[i]) {
-              container.appendChild(createLabel(chunk[i]));
+              container.appendChild(createLabel(chunk[i], bgColor, textColor));
             } else {
               const empty = document.createElement("div");
               empty.className = "label";
@@ -213,12 +174,28 @@
           sheet.appendChild(container);
           pagesEl.appendChild(sheet);
         }
-
-        console.log(
-          `Geradas ${all.length} etiquetas em ${pages} páginas (20 por página).`
-        );
       }
-
+      function createLabel({ p1, p2, p3 }, bgColor, textColor) {
+        const label = document.createElement("div");
+        label.className = "label";
+        label.style.background = bgColor;
+        label.style.color = textColor;
+        const code = document.createElement("div");
+        code.className = "code";
+        const piece1 = document.createElement("div");
+        piece1.textContent = p1;
+        const sep1 = document.createElement("div");
+        sep1.textContent = "-";
+        const piece2 = document.createElement("div");
+        piece2.textContent = p2;
+        const sep2 = document.createElement("div");
+        sep2.textContent = "-";
+        const piece3 = document.createElement("div");
+        piece3.textContent = p3;
+        code.append(piece1, sep1, piece2, sep2, piece3);
+        label.appendChild(code);
+        return label;
+      }
       function downloadHTML() {
         const doc = "<!doctype html>\n" + document.documentElement.outerHTML;
         const blob = new Blob([doc], { type: "text/html" });
@@ -229,6 +206,7 @@
         a.click();
         URL.revokeObjectURL(url);
       }
+      generate();
     </script>
   </body>
 </html>
