@@ -1,51 +1,57 @@
 <template>
   <v-card class="controls">
+    <div class="d-flex justify-center align-center">
+      <img src="/logo.png" width="180"></img>
+    </div>
+
     <div class="form-group">
-      <div>
-        <v-icon class="mr-2"> mdi-arrow-right-bold-circle </v-icon>
-        <label>Prefixo numérico</label>
-      </div>
-      <v-number-input
-        v-model="first"
-        outlined
-        density="compact"
-        hide-details
-        :min="1"
-      />
-    </div>
-
-    <div class="form-group letters">
-      <div>
-        <v-icon class="mr-2"> mdi-arrow-right-bold-circle </v-icon>
-        <label>Letras (de → até)</label>
-      </div>
-      <div class="row">
-        <v-text-field
-          density="compact"
-          hide-details
-          v-model="letterStart"
-          maxlength="1"
-          outlined
-          dense
-        />
-        <v-text-field
-          density="compact"
-          hide-details
-          v-model="letterEnd"
-          maxlength="1"
-          outlined
-          dense
-        />
-      </div>
-    </div>
-
-    <div class="form-group numbers">
+      <v-row>
+        <v-col md="6">
+          <div>
+            <v-icon class="mr-2"> mdi-arrow-right-bold-circle </v-icon>
+            <label>Prefixo</label>
+          </div>
+          <v-number-input
+            control-variant="stacked"
+            v-model="first"
+            outlined
+            density="compact"
+            hide-details
+            :min="1"
+          />
+        </v-col>
+        <v-col md="6">
+          <div>
+            <v-icon class="mr-2"> mdi-arrow-right-bold-circle </v-icon>
+            <label>Letras (de → até)</label>
+          </div>
+          <div class="row">
+            <v-text-field
+              density="compact"
+              hide-details
+              v-model="letterStart"
+              maxlength="1"
+              outlined
+              dense
+            />
+            <v-text-field
+              density="compact"
+              hide-details
+              v-model="letterEnd"
+              maxlength="1"
+              outlined
+              dense
+            />
+          </div>
+        </v-col>
+      </v-row>
       <div>
         <v-icon class="mr-2"> mdi-arrow-right-bold-circle </v-icon>
         <label>Números (de → até)</label>
       </div>
       <div class="row">
         <v-number-input
+          control-variant="stacked"
           density="compact"
           v-model="numStart"
           outlined
@@ -54,6 +60,7 @@
           :min="1"
         />
         <v-number-input
+          control-variant="stacked"
           density="compact"
           v-model="numEnd"
           outlined
@@ -63,6 +70,8 @@
         />
       </div>
     </div>
+
+    <div class="form-group numbers"></div>
 
     <div class="form-group colors">
       <v-row v-if="!vuetify.display.mobile.value">

@@ -1,32 +1,34 @@
 <template>
-  <CardTicketOptions @update:config="(value: any) => config = value" />
+  <div>
+    <CardTicketOptions @update:config="(value: any) => config = value" />
 
-  <main id="pages">
-    <section v-for="(chunk, p) in paginated" :key="p" class="sheet">
-      <div class="labels">
-        <div
-          v-for="(item, i) in chunk"
-          :key="i"
-          class="label"
-          :style="{ background: config.bgColor, color: config.textColor }"
-        >
-          <div class="code">
-            <div>{{ item.p1 }}</div>
-            <div>-</div>
-            <div>{{ item.p2 }}</div>
-            <div>-</div>
-            <div>{{ item.p3 }}</div>
+    <main id="pages">
+      <section v-for="(chunk, p) in paginated" :key="p" class="sheet">
+        <div class="labels">
+          <div
+            v-for="(item, i) in chunk"
+            :key="i"
+            class="label"
+            :style="{ background: config.bgColor, color: config.textColor }"
+          >
+            <div class="code">
+              <div>{{ item.p1 }}</div>
+              <div>-</div>
+              <div>{{ item.p2 }}</div>
+              <div>-</div>
+              <div>{{ item.p3 }}</div>
+            </div>
           </div>
+          <div
+            v-for="i in perPage - chunk.length"
+            :key="'empty-' + i"
+            class="label"
+            style="background: transparent"
+          />
         </div>
-        <div
-          v-for="i in perPage - chunk.length"
-          :key="'empty-' + i"
-          class="label"
-          style="background: transparent"
-        />
-      </div>
-    </section>
-  </main>
+      </section>
+    </main>
+  </div>
 </template>
 
 <script setup lang="ts">
