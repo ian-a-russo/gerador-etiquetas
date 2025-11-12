@@ -2,7 +2,7 @@ import type { RouteRecordRaw } from "vue-router";
 
 const route: RouteRecordRaw[] = [
   {
-    path: "/generate",
+    path: "/login",
     component: () => import("./Index.vue"),
   },
 ];

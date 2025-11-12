@@ -9,10 +9,20 @@
 // import { setupLayouts } from 'virtual:generated-layouts'
 import { createRouter, createWebHistory } from "vue-router";
 import { modules } from "./modules";
+import { useAuthStore } from "@/stores/user-auth-store";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: modules,
+});
+
+router.beforeEach((to, _, next) => {
+  const auth = useAuthStore();
+  if (to.meta.requiresAuth && !auth.isLoggedIn) {
+    next("/login");
+  } else {
+    next();
+  }
 });
 
 export default router;
