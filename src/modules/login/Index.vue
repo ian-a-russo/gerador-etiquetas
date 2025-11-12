@@ -63,7 +63,6 @@ import { useAuthStore } from "@/stores/user-auth-store";
 
 const key = ref("");
 const error = ref(false);
-const remember = ref(false);
 const router = useRouter();
 const auth = useAuthStore();
 

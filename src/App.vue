@@ -5,7 +5,15 @@
 </template>
 
 <script lang="ts" setup>
-//
+import router from "./router";
+
+onMounted(() => {
+  const isLogged = localStorage.getItem("isLoggedIn");
+
+  if (!isLogged) {
+    router.push("/login");
+  }
+});
 </script>
 
 <style>
