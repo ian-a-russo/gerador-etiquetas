@@ -1,225 +1,180 @@
 <template>
   <v-card class="controls">
-    <div class="d-flex justify-center align-center">
+     <div class="d-flex justify-center align-center">
       <img src="/logo.png" width="180"></img>
     </div>
 
-    <div class="form-group">
-      <v-row>
-        <v-col md="6">
-          <div>
-            <v-icon class="mr-2"> mdi-arrow-right-bold-circle </v-icon>
-            <label>Prefixo</label>
-          </div>
-          <v-number-input
-            control-variant="stacked"
-            v-model="first"
-            outlined
-            density="compact"
-            hide-details
-            :min="1"
-          />
-        </v-col>
-        <v-col md="6">
-          <div>
-            <v-icon class="mr-2"> mdi-arrow-right-bold-circle </v-icon>
-            <label>Letras (de → até)</label>
-          </div>
-          <div class="row">
-            <v-text-field
-              density="compact"
-              hide-details
-              v-model="letterStart"
-              maxlength="1"
-              outlined
-              dense
-            />
-            <v-text-field
-              density="compact"
-              hide-details
-              v-model="letterEnd"
-              maxlength="1"
-              outlined
-              dense
-            />
-          </div>
-        </v-col>
-      </v-row>
-      <div>
-        <v-icon class="mr-2"> mdi-arrow-right-bold-circle </v-icon>
-        <label>Números (de → até)</label>
-      </div>
+    <h3>Padrão do Ticket</h3>
+
+    <v-text-field
+      v-model="pattern"
+      label="Pattern"
+      placeholder="Ex: LNN-NN-L"
+      outlined
+      dense
+    />
+
+    <!-- OPÇÃO DE SEPARADOR -->
+    <v-switch v-model="useDash" label="Usar hífen (-) como separador" inset />
+
+    <!-- BLOCOS GERADOS -->
+    <div v-for="(block, i) in blocks" :key="i" class="block">
+      <strong> Bloco {{ i + 1 }} — {{ block.type }} ({{ block.size }}) </strong>
+
       <div class="row">
-        <v-number-input
-          control-variant="stacked"
-          density="compact"
-          v-model="numStart"
-          outlined
-          dense
-          hide-details
-          :min="1"
-        />
-        <v-number-input
-          control-variant="stacked"
-          density="compact"
-          v-model="numEnd"
-          outlined
-          dense
-          hide-details
-          :min="1"
-        />
-      </div>
-    </div>
-
-    <div class="form-group numbers"></div>
-
-    <div class="form-group colors">
-      <v-row v-if="!vuetify.display.mobile.value">
-        <v-col md="6">
-          <div>
-            <div class="mb-2">
-              <v-icon class="mr-2"> mdi-arrow-right-bold-circle </v-icon>
-              <label>Cor do fundo</label>
-            </div>
-            <v-color-picker
-              style="background-color: rgba(0, 0, 0, 0.5)"
-              v-model="bgColor"
-              flat
-              mode="hexa"
-              width="100%"
-            />
-          </div>
-        </v-col>
-        <v-col md="6">
-          <div>
-            <div class="mb-2">
-              <v-icon class="mr-2"> mdi-arrow-right-bold-circle </v-icon>
-              <label>Cor do texto</label>
-            </div>
-            <v-color-picker
-              style="background-color: rgba(0, 0, 0, 0.5)"
-              :model-value="textColor"
-              @update:model-value="(val) => (textColor = val)"
-              flat
-              mode="hexa"
-              width="100%"
-            />
-          </div>
-        </v-col>
-      </v-row>
-      <div v-else>
-        <div>
-          <div class="mb-2">
-            <v-icon class="mr-2"> mdi-arrow-right-bold-circle </v-icon>
-            <label>Cor do fundo</label>
-          </div>
-          <v-color-picker
-            style="background-color: rgba(0, 0, 0, 0.5)"
-            v-model="bgColor"
-            flat
-            mode="hexa"
-            width="100%"
-            hide-canvas
+        <template v-if="block.type === 'L'">
+          <v-text-field
+            v-model="block.start"
+            label="Letra início"
+            maxlength="1"
+            dense
+            outlined
           />
-        </div>
-
-        <div>
-          <div class="mb-2">
-            <v-icon class="mr-2"> mdi-arrow-right-bold-circle </v-icon>
-            <label>Cor do texto</label>
-          </div>
-          <v-color-picker
-            style="background-color: rgba(0, 0, 0, 0.5)"
-            :model-value="textColor"
-            @update:model-value="(val) => (textColor = val)"
-            flat
-            mode="hexa"
-            width="100%"
-            hide-canvas
+          <v-text-field
+            v-model="block.end"
+            label="Letra fim"
+            maxlength="1"
+            dense
+            outlined
           />
-        </div>
+        </template>
+
+        <template v-else>
+          <v-number-input
+            v-model="block.start"
+            label="Número início"
+            dense
+            outlined
+          />
+          <v-number-input
+            v-model="block.end"
+            label="Número fim"
+            dense
+            outlined
+          />
+        </template>
       </div>
     </div>
 
-    <div class="d-flex align-center justify-center">
-      <div>
-        <div class="mb-2 d-flex justify-center">
-          <v-icon class="mr-2"> mdi-palette </v-icon>
-          <label>Resultado:</label>
-        </div>
-
-        <div class="label" :style="{ background: bgColor, color: textColor }">
-          <div class="code">
-            <div>1</div>
-            <div>-</div>
-            <div>A</div>
-            <div>-</div>
-            <div>01</div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- CORES -->
+    <v-row>
+      <v-col md="6">
+        <label>Cor do fundo</label>
+        <v-color-picker v-model="bgColor" flat />
+      </v-col>
+      <v-col md="6">
+        <label>Cor do texto</label>
+        <v-color-picker v-model="textColor" flat />
+      </v-col>
+    </v-row>
 
     <v-card-actions>
-      <v-btn @click="printPage" block prepend-icon="mdi-file-table">
-        Gerar
-      </v-btn>
+      <v-btn block color="primary" @click="printPage"> Gerar e imprimir </v-btn>
     </v-card-actions>
   </v-card>
 </template>
 
 <script setup lang="ts">
-import vuetify from "@/plugins/vuetify";
+import { ref, watch, computed } from "vue";
+
+type Block = {
+  type: "L" | "N";
+  size: number;
+  start: string | number;
+  end: string | number;
+};
 
 const emit = defineEmits(["update:config"]);
-const first = ref(1);
-const letterStart = ref("A");
-const letterEnd = ref("E");
-const numStart = ref(1);
-const numEnd = ref(10);
+
+const pattern = ref("LNN-NN-L");
+const blocks = ref<Block[]>([]);
 const bgColor = ref("#d73708");
 const textColor = ref("#ffffff");
-const all = ref<
-  {
-    p1: number;
-    p2: string;
-    p3: string;
-  }[]
->([]);
 
-watch([bgColor, textColor, all], () => {
-  emit("update:config", { all, bgColor, textColor });
-});
+const useDash = ref(true);
+const separator = computed(() => (useDash.value ? "-" : " "));
 
-function rangeLetters(start: string, end: string) {
-  const result = [];
-  let s = start.toUpperCase().charCodeAt(0);
-  let e = end.toUpperCase().charCodeAt(0);
-  for (let i = s; i <= e; i++) {
-    result.push(String.fromCharCode(i));
-  }
-  return result;
-}
+/* -------- PARSER -------- */
 
-async function generate() {
-  const letters = rangeLetters(letterStart.value, letterEnd.value);
-  const nums = Array.from(
-    { length: numEnd.value - numStart.value + 1 },
-    (_, i) => String(numStart.value + i).padStart(2, "0")
-  );
+function parsePattern() {
+  const segments = pattern.value.split("-");
+  const result: Block[] = [];
 
-  const generated = [];
-  for (const L of letters) {
-    for (const N of nums) {
-      generated.push({ p1: first.value, p2: L, p3: N });
+  for (const segment of segments) {
+    let i = 0;
+
+    while (i < segment.length) {
+      const char = segment[i] as "L" | "N";
+      let j = i;
+
+      while (segment[j] === char) j++;
+
+      result.push({
+        type: char,
+        size: j - i,
+        start: char === "L" ? "A" : 1,
+        end: char === "L" ? "Z" : 10,
+      });
+
+      i = j;
     }
   }
-  all.value = generated;
+
+  blocks.value = result;
 }
 
-async function printPage() {
-  await generate();
-  window.print();
+watch(pattern, parsePattern, { immediate: true });
+
+/* -------- HELPERS -------- */
+
+function rangeLetters(start: string, end: string) {
+  const res: string[] = [];
+  for (let i = start.charCodeAt(0); i <= end.charCodeAt(0); i++) {
+    res.push(String.fromCharCode(i));
+  }
+  return res;
+}
+
+function cartesian(arrays: string[][]) {
+  return arrays.reduce((a, b) => a.flatMap((d) => b.map((e) => [...d, e])), [
+    [],
+  ] as string[][]);
+}
+
+/* -------- GENERATE -------- */
+
+function generate() {
+  const values = blocks.value.map((block) => {
+    if (block.type === "L") {
+      const letters = rangeLetters(block.start as string, block.end as string);
+
+      if (block.size === 1) return letters;
+
+      return cartesian(Array(block.size).fill(letters)).map((v) => v.join(""));
+    }
+
+    // NÚMEROS
+    return Array.from(
+      { length: Number(block.end) - Number(block.start) + 1 },
+      (_, i) => String(Number(block.start) + i).padStart(block.size, "0"),
+    );
+  });
+
+  return cartesian(values).map((v) => ({
+    code: v.join(separator.value),
+  }));
+}
+
+function printPage() {
+  const all = generate();
+
+  emit("update:config", {
+    all,
+    bgColor: bgColor.value,
+    textColor: textColor.value,
+  });
+
+  setTimeout(() => window.print(), 50);
 }
 </script>
 
@@ -307,5 +262,19 @@ async function printPage() {
   display: inline-flex;
   align-items: center;
   font-size: 37.5px;
+}
+
+.ticket {
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+  line-height: 1;
+}
+
+.ticket-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
 }
 </style>

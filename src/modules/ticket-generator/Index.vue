@@ -1,29 +1,31 @@
 <template>
   <div>
-    <CardTicketOptions @update:config="(value: any) => config = value" />
+    <CardTicketOptions @update:config="(value) => (config = value)" />
 
     <main id="pages">
       <section v-for="(chunk, p) in paginated" :key="p" class="sheet">
-        <div class="labels">
+        <div
+          class="labels"
+          :style="{
+            gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+          }"
+        >
           <div
             v-for="(item, i) in chunk"
             :key="i"
             class="label"
             :style="{ background: config.bgColor, color: config.textColor }"
           >
-            <div class="code">
-              <div>{{ item.p1 }}</div>
-              <div>-</div>
-              <div>{{ item.p2 }}</div>
-              <div>-</div>
-              <div>{{ item.p3 }}</div>
+            <div class="code" :style="{ fontSize }">
+              {{ item.code }}
             </div>
           </div>
+
+          <!-- completa a página -->
           <div
             v-for="i in perPage - chunk.length"
             :key="'empty-' + i"
-            class="label"
-            style="background: transparent"
+            class="label empty"
           />
         </div>
       </section>
@@ -32,28 +34,60 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from "vue";
 import CardTicketOptions from "./components/CardTicketOptions.vue";
 
-const config = ref({
-  all: [
-    {
-      p1: 1,
-      p2: "A",
-      p3: "E",
-    },
-  ],
-  textColor: "#fff",
+type Ticket = { code: string };
+
+const config = ref<{
+  all: Ticket[];
+  bgColor: string;
+  textColor: string;
+}>({
+  all: [],
   bgColor: "#d73708",
+  textColor: "#ffffff",
 });
 
 const perPage = 20;
 
+/* ---------------- PAGINAÇÃO ---------------- */
+
 const paginated = computed(() => {
-  const pages = [];
+  const pages: Ticket[][] = [];
   for (let i = 0; i < config.value.all.length; i += perPage) {
     pages.push(config.value.all.slice(i, i + perPage));
   }
   return pages;
+});
+
+/* ---------------- MÉTRICAS ---------------- */
+
+const maxLength = computed(() => {
+  if (!config.value.all.length) return 0;
+  return Math.max(...config.value.all.map((t) => t.code.length));
+});
+
+/* ---------------- COLUNAS DINÂMICAS ---------------- */
+
+const columns = computed(() => {
+  const len = maxLength.value;
+
+  if (len <= 7) return 4;
+  if (len <= 10) return 3;
+  if (len <= 14) return 2;
+  return 1;
+});
+
+/* ---------------- FONTE DINÂMICA ---------------- */
+
+const fontSize = computed(() => {
+  const len = maxLength.value;
+
+  if (len <= 7) return "64px";
+  if (len <= 10) return "56px";
+  if (len <= 14) return "48px";
+  return "40px";
 });
 </script>
 
@@ -71,59 +105,57 @@ const paginated = computed(() => {
   .controls {
     display: none !important;
   }
+
   #pages {
-    display: grid !important;
+    display: block !important;
   }
-  body,
-  html {
+
+  html,
+  body {
     width: 297mm;
     height: 210mm;
+    margin: 0;
   }
 }
-html,
-body {
-  margin: 0;
-  padding: 0;
-  font-family: Inter, system-ui, -apple-system, Roboto, "Helvetica Neue", Arial,
-    sans-serif;
-}
+
 .sheet {
   width: 297mm;
   height: 210mm;
   padding: 10mm;
   display: flex;
-  align-items: stretch;
   justify-content: center;
-  page-break-after: always;
   box-sizing: border-box;
+  page-break-after: always;
 }
+
 .labels {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-rows: repeat(6, 1fr);
+  grid-template-rows: repeat(5, minmax(0, 1fr));
   gap: 6mm;
   width: 100%;
   height: 100%;
 }
+
 .label {
-  width: 300px;
-  height: 150px;
-  background: #d73708;
-  color: #fff;
-  font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  box-sizing: border-box;
-  padding: 6mm 3mm;
+  font-weight: 800;
+  border-radius: 4px;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
-  border-radius: 4px;
+  overflow: hidden;
 }
+
+.label.empty {
+  background: transparent !important;
+}
+
 .code {
-  display: inline-flex;
-  align-items: center;
-  font-size: 75px;
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow-wrap: normal;
+  line-height: 1;
+  text-align: center;
 }
 </style>
