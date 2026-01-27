@@ -41,13 +41,13 @@
 
         <template v-else>
           <v-number-input
-            v-model="block.start"
+            v-model="block.start as number"
             label="Número início"
             dense
             outlined
           />
           <v-number-input
-            v-model="block.end"
+            v-model="block.end as number"
             label="Número fim"
             dense
             outlined
