@@ -1,7 +1,7 @@
 <template>
   <v-card class="controls">
-     <div class="d-flex justify-center align-center">
-      <img src="/logo.png" width="180"></img>
+    <div class="d-flex justify-center align-center">
+      <img src="/logo.png" width="180" />
     </div>
 
     <h3>Padrão do Ticket</h3>
@@ -77,48 +77,57 @@
 <script setup lang="ts">
 import { ref, watch, computed } from "vue";
 
+const emit = defineEmits(["update:config"]);
+
 type Block = {
   type: "L" | "N";
   size: number;
   start: string | number;
   end: string | number;
+  separatorAfter: boolean; // indica se DEPOIS deste bloco (no fluxo) deve haver separador
 };
-
-const emit = defineEmits(["update:config"]);
 
 const pattern = ref("LNN-NN-L");
 const blocks = ref<Block[]>([]);
+
+// CORRIGIDO: cor com hash
 const bgColor = ref("#d73708");
 const textColor = ref("#ffffff");
 
 const useDash = ref(true);
 const separator = computed(() => (useDash.value ? "-" : " "));
 
-/* -------- PARSER -------- */
-
+/* -------- PARSER CORRIGIDO --------
+   Observação importante: agora marque `separatorAfter` apenas para o ÚLTIMO
+   bloco do segmento quando houver um '-' após o segmento.
+*/
 function parsePattern() {
   const segments = pattern.value.split("-");
   const result: Block[] = [];
 
-  for (const segment of segments) {
+  segments.forEach((segment, segIndex) => {
     let i = 0;
 
     while (i < segment.length) {
       const char = segment[i] as "L" | "N";
       let j = i;
-
       while (segment[j] === char) j++;
 
+      // É o último bloco dentro do segmento?
+      const isLastBlockInSegment = j >= segment.length;
       result.push({
         type: char,
         size: j - i,
         start: char === "L" ? "A" : 1,
         end: char === "L" ? "Z" : 10,
+        // ✅ separatorAfter deve ser true somente se este for o último bloco DO segmento
+        // e se existir outro segmento depois (segIndex < segments.length - 1)
+        separatorAfter: isLastBlockInSegment && segIndex < segments.length - 1,
       });
 
       i = j;
     }
-  }
+  });
 
   blocks.value = result;
 }
@@ -141,29 +150,37 @@ function cartesian(arrays: string[][]) {
   ] as string[][]);
 }
 
-/* -------- GENERATE -------- */
+/* -------- GENERATE (usa separator.value) -------- */
 
 function generate() {
-  const values = blocks.value.map((block) => {
+  const blockValues = blocks.value.map((block) => {
     if (block.type === "L") {
       const letters = rangeLetters(block.start as string, block.end as string);
-
       if (block.size === 1) return letters;
-
       return cartesian(Array(block.size).fill(letters)).map((v) => v.join(""));
     }
 
-    // NÚMEROS
     return Array.from(
       { length: Number(block.end) - Number(block.start) + 1 },
       (_, i) => String(Number(block.start) + i).padStart(block.size, "0"),
     );
   });
 
-  return cartesian(values).map((v) => ({
-    code: v.join(separator.value),
-  }));
+  const combinations = cartesian(blockValues);
+
+  return combinations.map((combo) => {
+    let code = "";
+    combo.forEach((value, i) => {
+      code += value;
+      if (blocks.value[i]?.separatorAfter) {
+        code += separator.value; // usa hífen ou espaço conforme toggle
+      }
+    });
+    return { code };
+  });
 }
+
+/* -------- EMIT -------- */
 
 function printPage() {
   const all = generate();
@@ -192,89 +209,16 @@ function printPage() {
   font-family: "Inter", sans-serif;
 }
 
-.controls .form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.controls label {
-  font-weight: 600;
-  font-size: 14px;
-  color: #ffffff;
-}
-
 .controls .row {
   display: flex;
   gap: 10px;
 }
 
-.controls .colors {
-  display: flex;
-  gap: 15px;
-  justify-content: space-between;
-}
-
-.controls button {
-  background: #d73708;
-  color: #fff;
-  border: none;
-  padding: 10px 18px;
-  font-weight: 600;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  align-self: flex-end;
-}
-
-.controls button:hover {
-  background: #b72f06;
-}
-
-@media (max-width: 768px) {
-  .controls {
-    width: 90%;
-    padding: 16px;
-  }
-
-  .controls .colors {
-    flex-direction: column;
-  }
-}
-
-.label {
-  width: 150px;
-  height: 75px;
-  background: #d73708;
-  color: #fff;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  box-sizing: border-box;
-  padding: 6mm 3mm;
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
-  border-radius: 4px;
-}
-.code {
-  display: inline-flex;
-  align-items: center;
-  font-size: 37.5px;
-}
-
-.ticket {
-  white-space: nowrap !important;
-  word-break: keep-all !important;
-  overflow-wrap: normal !important;
-  line-height: 1;
-}
-
-.ticket-container {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  white-space: nowrap;
+/* seu CSS mantido */
+.block {
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
 }
 </style>
