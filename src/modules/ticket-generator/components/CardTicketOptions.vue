@@ -29,6 +29,9 @@
             maxlength="1"
             dense
             outlined
+            @input="
+              block.start = (block.start as string).replace(/[^a-zA-Z]/g, '')
+            "
           />
           <v-text-field
             v-model="block.end"
@@ -36,6 +39,7 @@
             maxlength="1"
             dense
             outlined
+            @input="block.end = (block.end as string).replace(/[^a-zA-Z]/g, '')"
           />
         </template>
 
@@ -45,12 +49,14 @@
             label="Número início"
             dense
             outlined
+            :min="0"
           />
           <v-number-input
             v-model="block.end as number"
             label="Número fim"
             dense
             outlined
+            :min="1"
           />
         </template>
       </div>
