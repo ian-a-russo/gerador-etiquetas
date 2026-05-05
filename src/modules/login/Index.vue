@@ -101,8 +101,10 @@ function handleLogin() {
 .login-left {
   background: linear-gradient(135deg, #4a148c, #8e24aa);
   color: #fff;
-  height: 80%;
-  width: 35%;
+  height: auto;
+  width: 90%;
+  max-width: 400px;
+  padding: 32px 16px;
 }
 
 .login-card {
@@ -117,6 +119,15 @@ function handleLogin() {
   background: #0f0f0f;
   position: relative;
   height: 80%;
+}
+
+@media (min-width: 960px) {
+  .login-left {
+    height: 80%;
+    width: 35%;
+    max-width: none;
+    padding: 16px;
+  }
 }
 
 .illustration {
