@@ -9,6 +9,10 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
+    icon: path.join(__dirname, 'build/logo.ico'),
+    webPreferences: {
+      webSecurity: false
+    }
   })
 
   const indexPath = path.join(__dirname, 'dist', 'index.html')

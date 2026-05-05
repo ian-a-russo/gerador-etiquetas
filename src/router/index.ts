@@ -7,12 +7,12 @@
 // Composables
 
 // import { setupLayouts } from 'virtual:generated-layouts'
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHashHistory } from "vue-router";
 import { modules } from "./modules";
 import { useAuthStore } from "@/stores/user-auth-store";
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   routes: modules,
 });
 
