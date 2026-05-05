@@ -390,7 +390,7 @@ const previewCode = computed(() => {
   try {
     const all = generate();
     if (all.length > 0) {
-      return all[0].code;
+      return all[0]?.code;
     }
     return "";
   } catch (e) {
